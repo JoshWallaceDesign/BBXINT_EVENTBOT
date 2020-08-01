@@ -22,7 +22,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(
 gclient = gspread.authorize(creds)
 
 sheet = gclient.open("BBXINT_JUDGING").worksheet(
-    'PARTICIPANTS')  # Open the spreadhseet
+    'HOST')  # Open the spreadhseet
 sheet2 = gclient.open("BBXINT_JUDGING").worksheet(
     'JUDGE 1')  # Open the spreadhseet
 sheet3 = gclient.open("BBXINT_JUDGING").worksheet(
