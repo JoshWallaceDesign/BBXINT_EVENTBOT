@@ -22,6 +22,11 @@ async def on_ready():
     return await client.change_presence(activity=discord.Activity(type=3, name='youtube.com/beatboxinternational'))
 
 
+@client.event
+async def on_command_error(ctx, error):
+    pass
+
+
 @client.command(aliases=['8ball', 'test'])
 async def _8ball(ctx, *, question):
     responses = ['You suck. So, no.',
@@ -29,7 +34,7 @@ async def _8ball(ctx, *, question):
     await ctx.send(f'Questions: {question}\n Answers: {random.choice(responses)}')
 
 extensions = ['cogs.HelpEvents',
-              'cogs.Timers', 'cogs.BBXEvents']
+              'cogs.Music', 'cogs.Timers', 'cogs.BBXEvents']
 
 if __name__ == "__main__":
     for ext in extensions:
