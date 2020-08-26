@@ -50,11 +50,43 @@ parts = {}
 que = {}
 locked = False
 partnum = []
+hasjusges = False
 
 
 class EventQueue(commands.Cog):
     def __init__(self, bot):
         self.client = bot
+
+    """_____________________EVENT START________________________"""
+
+    @commands.command()
+    async def judges(self, ctx, j1: discord.Member, j2: discord.Member, j3: discord.Member):
+        j1name = j1.display_name
+        j2name = j2.display_name
+        j3name = j3.display_name
+        role = discord.utils.get(
+            j1.guild.roles, name="BBXINT Daily Judge")
+        await discord.Member.add_roles(j1, role)
+        await discord.Member.add_roles(j2, role)
+        await discord.Member.add_roles(j3, role)
+        embed1 = discord.Embed(
+            title=(f"Yo {j1name}"), description=("Here are the **Judging Sheets** for Today's **Event** | You are **JUDGE 1**" + '\n' + "https://docs.google.com/spreadsheets/d/1FAIk6R9Rr12X-DyWlH3Z7vBUV8Ij74qGyTF4n86a66o/edit?usp=sharing"), color=0x5473de)
+        embed1.set_author(
+            name="BEATBOX INTERNATIONAL", url="https://www.beatboxinternational.com", icon_url="https://lh3.googleusercontent.com/a-/AOh14GiBlYNVkzQLbkdzK-prRDKGmfy2INbA9n3Og0A-Bg=s88")
+        await j1.send(embed=embed1)
+        sheet.update_cell(3, 7, j1name)
+        embed2 = discord.Embed(
+            title=(f"Yo {j2name}"), description=("Here are the **Judging Sheets** for **Today's Event** | You are **JUDGE 2**" + '\n' + "https://docs.google.com/spreadsheets/d/1FAIk6R9Rr12X-DyWlH3Z7vBUV8Ij74qGyTF4n86a66o/edit?usp=sharing"), color=0x5473de)
+        embed2.set_author(
+            name="BEATBOX INTERNATIONAL", url="https://www.beatboxinternational.com", icon_url="https://lh3.googleusercontent.com/a-/AOh14GiBlYNVkzQLbkdzK-prRDKGmfy2INbA9n3Og0A-Bg=s88")
+        await j2.send(embed=embed2)
+        sheet.update_cell(6, 7, j2name)
+        embed3 = discord.Embed(
+            title=(f"Yo {j3name}"), description=("Here are the **Judging Sheets** for **Today's Event** | You are **JUDGE 3**" + '\n' + "https://docs.google.com/spreadsheets/d/1FAIk6R9Rr12X-DyWlH3Z7vBUV8Ij74qGyTF4n86a66o/edit?usp=sharing"), color=0x5473de)
+        embed3.set_author(
+            name="BEATBOX INTERNATIONAL", url="https://www.beatboxinternational.com", icon_url="https://lh3.googleusercontent.com/a-/AOh14GiBlYNVkzQLbkdzK-prRDKGmfy2INbA9n3Og0A-Bg=s88")
+        await j3.send(embed=embed2)
+        sheet.update_cell(9, 7, j3name)
 
     """__________________Join & Leave__________________"""
 
@@ -77,7 +109,11 @@ class EventQueue(commands.Cog):
                 await discord.Member.add_roles(member, role)
                 print('not in queue')
                 part = ctx.message.author.display_name
-                insertRow = [part]
+                nick = ctx.message.author.display_name
+                userid = ctx.message.author.id
+                namecode = [nick, str(userid)]
+                sheet.append_row(namecode, value_input_option='USER_ENTERED',
+                                 insert_data_option='INSERT_ROWS', table_range='A2')
 
                 parts = part
 
@@ -89,11 +125,6 @@ class EventQueue(commands.Cog):
                 embed = discord.Embed(
                     title=(part + ' has been Added to the Queue'), color=0xaaf542)
                 await ctx.send(embed=embed)
-                if not sheet.findall(part):
-                    sheet.append_row(insertRow, table_range='A2')
-
-                else:
-                    print('found a match')
 
         else:
             embed = discord.Embed(
@@ -105,6 +136,7 @@ class EventQueue(commands.Cog):
         global parts
         member = ctx.author
         nick = ctx.message.author.display_name
+        userid = ctx.message.author.id
         print(nick)
         role = discord.utils.get(member.guild.roles, name="Participant")
         await discord.Member.remove_roles(member, role)
@@ -115,9 +147,25 @@ class EventQueue(commands.Cog):
         await ctx.send(embed=embed)
         part = que[id].remove(x)
         parts = part
-        cell_list = sheet.findall(nick)
-        value = cell_list[0]
-        sheet.update_cell(value.row, value.col, 'Left the Queue')
+        cell_list1 = sheet.findall(str(userid))
+        cell_list2 = sheet.findall(nick)
+        value1 = cell_list1[0]
+        value2 = cell_list2[0]
+        sheet.update_cell(value1.row, value1.col, '-')
+        sheet.update_cell(value2.row, value2.col, 'N/A')
+
+    @commands.command()
+    async def replace(self, ctx, member: discord.Member, member_rep: discord.Member):
+        name1 = member.display_name
+        name2 = member_rep.display_name
+        id1 = member.id
+        id2 = member_rep.id
+        cell_list1 = sheet.findall(str(id1))
+        cell_list2 = sheet.findall(name1)
+        value1 = cell_list1[0]
+        value2 = cell_list2[0]
+        sheet.update_cell(value1.row, value1.col, id2)
+        sheet.update_cell(value2.row, value2.col, name2)
 
     """__________________Queue__________________"""
 
@@ -261,9 +309,12 @@ class EventQueue(commands.Cog):
                 title=('The Event is now Over!'), description=(f"**---Please Use {text_channel.mention}---**"), color=0x7289da)
             await ctx.send(embed=embed)
             role_to_remove = "Participant"
+            role_2_remove = "BBXINT Daily Judge"
             for user in ctx.guild.members:
                 for role in user.roles:
                     if role.name == role_to_remove:
+                        await user.remove_roles(role)
+                    if role.name == role_2_remove:
                         await user.remove_roles(role)
 
         else:
@@ -344,7 +395,7 @@ class EventQueue(commands.Cog):
             message = await ctx.send(embed=embed)
             await message.pin()
 
-    @ commands.command()
+    """@ commands.command()
     async def resetsheet(self, ctx):
         if discord.utils.get(ctx.message.author.roles, name="Host") or discord.utils.get(ctx.message.author.roles, name="BBXINT Staff"):
             range_of_cells = sheet.range('A2:A151')
@@ -445,7 +496,7 @@ class EventQueue(commands.Cog):
         else:
             embed = discord.Embed(
                 title=('This command is only for the Host!'), color=0xf55742)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed)"""
 
     @ commands.command()
     async def dmsheet(self, ctx):
