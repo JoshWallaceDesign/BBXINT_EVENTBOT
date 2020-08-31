@@ -41,6 +41,8 @@ sheet9 = gclient.open("BBXINT_JUDGING").worksheet(
     'Results')  # Open the spreadhseet
 sheet10 = gclient.open("BBXINT_JUDGING").worksheet(
     'RANKCALC')  # Open the spreadhseet
+sheet11 = gclient.open("BBXINT_JUDGING").worksheet(
+    'NameID')  # Open the spreadhseet
 
 data = sheet.get_all_records()  # Get a list of all records
 
@@ -64,6 +66,8 @@ class EventQueue(commands.Cog):
         j1name = j1.display_name
         j2name = j2.display_name
         j3name = j3.display_name
+        if j1name != "'(J)" or "(J)":
+            await j1.edit(nick="'(J) " + j1name)
         role = discord.utils.get(
             j1.guild.roles, name="BBXINT Daily Judge")
         await discord.Member.add_roles(j1, role)
@@ -111,9 +115,17 @@ class EventQueue(commands.Cog):
                 part = ctx.message.author.display_name
                 nick = ctx.message.author.display_name
                 userid = ctx.message.author.id
-                namecode = [nick, str(userid)]
-                sheet.append_row(namecode, value_input_option='USER_ENTERED',
-                                 insert_data_option='INSERT_ROWS', table_range='A2')
+                namecode = [nick, str(userid), "True"]
+                if sheet11.findall(nick):
+                    cell = sheet11.find(nick)
+                    row_number = cell.row
+                    print(cell.row)
+                    workbook2_row = 'C'+str(row_number)
+                    print(workbook2_row)
+                    sheet11.update_acell(workbook2_row, ('TRUE'))
+                else:
+                    sheet11.append_row(namecode, value_input_option='USER_ENTERED',
+                                       insert_data_option='INSERT_ROWS', table_range='A2')
 
                 parts = part
 
@@ -136,7 +148,6 @@ class EventQueue(commands.Cog):
         global parts
         member = ctx.author
         nick = ctx.message.author.display_name
-        userid = ctx.message.author.id
         print(nick)
         role = discord.utils.get(member.guild.roles, name="Participant")
         await discord.Member.remove_roles(member, role)
@@ -147,12 +158,21 @@ class EventQueue(commands.Cog):
         await ctx.send(embed=embed)
         part = que[id].remove(x)
         parts = part
-        cell_list1 = sheet.findall(str(userid))
+        """cell_list1 = sheet.findall(str(userid))
         cell_list2 = sheet.findall(nick)
         value1 = cell_list1[0]
         value2 = cell_list2[0]
         sheet.update_cell(value1.row, value1.col, '-')
-        sheet.update_cell(value2.row, value2.col, 'N/A')
+        sheet.update_cell(value2.row, value2.col, 'N/A')"""
+        if sheet11.findall(nick):
+            cell = sheet11.find(nick)
+            row_number = cell.row
+            print(cell.row)
+            workbook2_row = 'C'+str(row_number)
+            print(workbook2_row)
+            sheet11.update_acell(workbook2_row, ('FALSE'))
+        else:
+            print('watchu talkin about willis')
 
     @commands.command()
     async def replace(self, ctx, member: discord.Member, member_rep: discord.Member):
@@ -160,12 +180,12 @@ class EventQueue(commands.Cog):
         name2 = member_rep.display_name
         id1 = member.id
         id2 = member_rep.id
-        cell_list1 = sheet.findall(str(id1))
-        cell_list2 = sheet.findall(name1)
+        cell_list1 = sheet11.findall(str(id1))
+        cell_list2 = sheet11.findall(name1)
         value1 = cell_list1[0]
         value2 = cell_list2[0]
-        sheet.update_cell(value1.row, value1.col, id2)
-        sheet.update_cell(value2.row, value2.col, name2)
+        sheet11.update_cell(value1.row, value1.col, id2)
+        sheet11.update_cell(value2.row, value2.col, name2)
 
     """__________________Queue__________________"""
 
@@ -270,11 +290,12 @@ class EventQueue(commands.Cog):
 
             amount = len(que[id])
             embed = discord.Embed(
-                title=('Next Up | ' + performingnow), description=(f'**__{str(amount)} Total Participants__**' + '\n' + ("\n".join(que[id]))), color=0x7289da)
+                title=(performingnow + ' | is UP'), description=(f'**__{str(amount)} Total Participants__**' + '\n' + ("\n".join(que[id]))), color=0x7289da)
             await ctx.send(embed=embed)
             for user in ctx.guild.members:
                 if user.display_name == performingnow:
                     await user.edit(mute=False)
+
         else:
             embed = discord.Embed(
                 title=('This command is only for the Host!'), color=0xf55742)
