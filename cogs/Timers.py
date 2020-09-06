@@ -13,7 +13,7 @@ class EventTimer(commands.Cog):
         self.client = bot
     stopTimer = False
 
-    @commands.command()
+    @commands.command(aliases=['s'])
     async def stop(self, ctx):
         if discord.utils.get(ctx.message.author.roles, name="Host") or discord.utils.get(ctx.message.author.roles, name="BBXINT Staff"):
             global stopTimer
@@ -25,7 +25,7 @@ class EventTimer(commands.Cog):
                 title=('This command is only for the Host!'), color=0xf55742)
             await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=['t'])
     async def timer(self, ctx, seconds):
         if discord.utils.get(ctx.message.author.roles, name="Host") or discord.utils.get(ctx.message.author.roles, name="BBXINT Staff"):
             global stopTimer
