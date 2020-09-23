@@ -125,7 +125,7 @@ class EventQueue(commands.Cog):
                     sheet11.update_acell(workbook2_row, ('TRUE'))
                 else:
                     sheet11.append_row(namecode, value_input_option='USER_ENTERED',
-                                       insert_data_option='INSERT_ROWS', table_range='A2')
+                                       insert_data_option='INSERT_ROWS', table_range='A1:C1')
 
                 parts = part
 
